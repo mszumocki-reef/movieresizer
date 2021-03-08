@@ -1,5 +1,9 @@
 from django.core.management import BaseCommand
 
+from movies.scanner import perform_scanning, cleanup
+from movies.pools import wait_for_all_futures
+from movies.models import MovieFile
+
 
 class Command(BaseCommand):
     """Scan all configured directories, exit when scanning is complete"""
@@ -14,11 +18,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        from movies.scanner import perform_scanning
-        from movies.pools import wait_for_all_futures
         if options.get('force_probe'):
-            print('Force probe')
-            from movies.models import MovieFile
             MovieFile.objects.all().update(probed=False)
         perform_scanning()
         wait_for_all_futures()
+        deleted = cleanup()
+        remaining = MovieFile.objects.all().count()
+        print(f"\n{remaining} files in DB, {deleted} stale files removed")
+

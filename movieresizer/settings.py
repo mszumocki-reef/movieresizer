@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = '8*7-pajiga-2=-ykk8^1fe7@abpd$)v!i176&^uskcszkwgywx'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -71,7 +69,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'movieresizer.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -84,7 +81,6 @@ DATABASES = {
         'PASSWORD': 'movies',
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -99,8 +95,26 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+FILTER_CRITERIA = {
+    'max_width': 1280,
+    'max_height': 720,
+    'accepted_codecs': {'hevc', 'avc1', 'mp42', 'hvc1', 'H264'},
+}
+
+OUTPUT_PROFILE = {
+    'resize_to': 'hd720',
+    'resize_filter': 'scale',
+    'output_suffix': '.mkv',
+    'output_path': Path(r'D:\output'),
+    'command_args': ['ffmpeg', '-hwaccel', 'dxva2'],
+    'output_settings': {
+        'vcodec': 'hevc_amf',
+        #'rc': 'vbr_peak',
+        'b:v': '1M',
+    }
+}

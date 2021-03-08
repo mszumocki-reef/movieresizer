@@ -16,12 +16,20 @@ class Command(BaseCommand):
             '--limit', action='store', type=int,
             help='Limit to first N files'
         )
+        parser.add_argument(
+            'filters', nargs='*',
+            help='Additional filters (key=value)'
+        )
 
     def handle(self, *args, **options):
         from movies.models import all_to_convert
         replace = options.get('replace')
         limit = options.get('limit')
-        q = all_to_convert()
+        filters = {}
+        for s in options.get('filters'):
+            key, value = s.split('=')
+            filters[key] = value
+        q = all_to_convert(**filters)
         if limit:
             q = q[:limit]
         total = q.count()

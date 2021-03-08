@@ -15,7 +15,13 @@ def perform_scanning():
             scan(directory)
 
 
+def cleanup():
+    to_delete = [path for path in MovieFile.objects.all().values_list('path', flat=True) if not Path(path).exists()]
+    return MovieFile.objects.filter(path__in=to_delete).delete()[0]
+
+
 def scan(directory):
+    print('d', end='')
     for child in directory.iterdir():
         if child.exists():
             if child.is_dir():
@@ -33,6 +39,6 @@ def check_file(path):
         defaults=dict(original_size=stats.st_size)
     )
     if not is_new and movie.original_size != stats.st_size:
-        movie.clear()
+        movie.clear(stats.st_size)
     if not movie.probed:
         future_queue.append(probe_pool.submit(movie.probe))

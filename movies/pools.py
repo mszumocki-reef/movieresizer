@@ -1,7 +1,7 @@
 import collections
 from concurrent.futures import ThreadPoolExecutor as Executor
 
-probe_pool = Executor(max_workers=10)
+probe_pool = Executor(max_workers=5)
 convert_pool = Executor(max_workers=1)
 future_queue = []
 
