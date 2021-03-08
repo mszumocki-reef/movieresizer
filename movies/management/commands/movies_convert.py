@@ -9,10 +9,6 @@ class Command(BaseCommand):
         Entry point for subclassed commands to add custom arguments.
         """
         parser.add_argument(
-            '--replace', action='store_true',
-            help='Replace old files with new ones.',
-        )
-        parser.add_argument(
             '--limit', action='store', type=int,
             help='Limit to first N files'
         )
@@ -35,4 +31,4 @@ class Command(BaseCommand):
         total = q.count()
         for i, m in enumerate(q):
             print(f'Converting {i+1}/{total}: {m}')
-            m.convert(replace=replace)
+            m.convert(replace=True)

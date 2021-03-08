@@ -130,10 +130,11 @@ class MovieFile(models.Model):
             op = Path(self.output_path)
             original = Path(self.path)
             new = original.with_suffix(settings.OUTPUT_PROFILE['output_suffix'])
-            print(f'Replacing {original} ({self.original_size}) with {op} as {new} ({self.output_size})')
+            print(f'Replacing {original} ({self.original_size_human}) with {op} as {new} ({self.output_size_human})')
             shutil.copy(op, new)
             op.unlink()
             original.unlink()
+            MovieFile.objects.filter(path=self.path).delete()
             self.path = str(new)
             self.output_path = None
             self.save()
