@@ -1,11 +1,16 @@
 import collections
 from concurrent.futures import ThreadPoolExecutor as Executor
 
-probe_pool = Executor(max_workers=5)
-convert_pool = Executor(max_workers=1)
+probe_pool = Executor()
+convert_pool = Executor(max_workers=2)
 future_queue = []
 
 
 def wait_for_all_futures():
-    for f in future_queue:
-        f.result(timeout=None)
+    try:
+        for f in future_queue:
+            f.result(timeout=None)
+    except KeyboardInterrupt:
+        probe_pool.shutdown(cancel_futures=True)
+        convert_pool.shutdown(cancel_futures=True)
+        raise

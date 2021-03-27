@@ -5,7 +5,8 @@ from django.db import transaction
 from .models import MovieDirectory, MovieFile
 from .pools import probe_pool, future_queue
 
-INCLUDED = {'.asf', '.avi', '.mp4', '.mov', '.mkv', '.wmv'}
+INCLUDED = {'.asf', '.avi', '.mp4', '.mov', '.mkv', '.wmv', '.mpg', '.flv'}
+MISSED = set()
 
 
 def perform_scanning():
@@ -13,6 +14,7 @@ def perform_scanning():
         directory = Path(directory)
         if directory.exists() and directory.is_dir():
             scan(directory)
+    print(f"\nIgnored file types: {MISSED}")
 
 
 def cleanup():
@@ -27,9 +29,11 @@ def scan(directory):
             if child.is_dir():
                 scan(child)
             else:
-                suffix = child.suffix
-                if suffix.lower() in INCLUDED:
+                suffix = child.suffix.lower()
+                if suffix in INCLUDED:
                     check_file(child)
+                else:
+                    MISSED.add(suffix)
 
 
 def check_file(path):

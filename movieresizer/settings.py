@@ -104,6 +104,10 @@ FILTER_CRITERIA = {
     'max_width': 1280,
     'max_height': 720,
     'accepted_codecs': {'hevc', 'avc1', 'mp42', 'hvc1', 'H264'},
+    'other_conditions': {
+        'probed_bitrate__gte': 1500000,
+    },
+    'order': ['-probed_bitrate', 'original_size', 'path'],
 }
 
 OUTPUT_PROFILE = {
@@ -111,10 +115,10 @@ OUTPUT_PROFILE = {
     'resize_filter': 'scale',
     'output_suffix': '.mkv',
     'output_path': Path(r'D:\output'),
-    'command_args': ['ffmpeg', '-hwaccel', 'dxva2'],
+    'command_args': ['ffmpeg', '-hwaccel', 'vulkan'],
     'output_settings': {
         'vcodec': 'hevc_amf',
-        #'rc': 'vbr_peak',
-        'b:v': '1M',
-    }
+    },
+    'max_bitrate': 10**6,
+    'bitrate_reduction': 2,
 }
