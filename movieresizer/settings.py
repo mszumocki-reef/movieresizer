@@ -103,7 +103,7 @@ STATIC_URL = '/static/'
 FILTER_CRITERIA = {
     'max_width': 1280,
     'max_height': 720,
-    'accepted_codecs': {'hevc', 'avc1', 'mp42', 'hvc1', 'H264'},
+    'accepted_codecs': {'hevc', 'avc1', 'mp42', 'hvc1', 'H264', 'unknown'},
     'other_conditions': {
         'probed_bitrate__gte': 1500000,
     },
@@ -118,7 +118,8 @@ OUTPUT_PROFILE = {
     'command_args': ['ffmpeg', '-hwaccel', 'vulkan'],
     'output_settings': {
         'vcodec': 'hevc_amf',
+        'acodec': 'copy',
     },
     'max_bitrate': 10**6,
-    'bitrate_reduction': 2,
+    'bitrate_reduction': 1,
 }

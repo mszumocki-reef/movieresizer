@@ -1,6 +1,7 @@
 import os
 import shutil
 import traceback
+import string
 from pathlib import Path
 
 import ffmpeg
@@ -38,12 +39,14 @@ def to_output_path(path):
     return Path(output_path).with_suffix(settings.OUTPUT_PROFILE['output_suffix'])
 
 
-def all_to_convert(**kwargs):
+def all_to_convert(qs=None, **kwargs):
+    if qs is None:
+        qs = MovieFile.objects.all()
     cond = (models.Q(probed_width__gt=settings.FILTER_CRITERIA['max_width']) |
             models.Q(probed_height__gt=settings.FILTER_CRITERIA['max_height']))
-    cond = cond | ~models.Q(probed_video_codec__in=settings.FILTER_CRITERIA['accepted_codecs'])
     cond = cond | models.Q(force_convert=True) | models.Q(**settings.FILTER_CRITERIA['other_conditions'])
-    query = MovieFile.objects.filter(
+    cond = cond | ~models.Q(probed_video_codec__in=settings.FILTER_CRITERIA['accepted_codecs'])
+    query = qs.filter(
         cond,
         converted=False,
         probed=True,
@@ -100,7 +103,10 @@ class MovieFile(models.Model):
             info = ffmpeg.probe(self.path)
             vc = video_codec(info['streams'])
             if vc:
-                self.probed_video_codec = vc['codec_tag_string']
+                tag = vc['codec_tag_string']
+                if not tag or not tag.isalpha() or tag.startswith('['):
+                    tag = 'unknown'
+                self.probed_video_codec = tag
                 self.probed_width = vc['coded_width']
                 self.probed_height = vc['coded_height']
             try:
@@ -115,6 +121,7 @@ class MovieFile(models.Model):
         print('.', end='')
 
     def convert(self, replace=True):
+        should_break = False
         if not Path(self.path).exists():
             self.delete()
             return
@@ -146,7 +153,8 @@ class MovieFile(models.Model):
 
             self.output_size = op.stat().st_size
             self.converted = True
-            if self.output_size >= self.original_size:
+            self.force_convert = False
+            if self.output_size >= self.original_size and not self.force_convert:
                 print(f'\n{self.path}: Output was larger than input: {self.output_size_human} > {self.original_size_human}')
                 op.unlink()
                 self.output_path = None
@@ -155,11 +163,16 @@ class MovieFile(models.Model):
                 self.replace()
 
         except KeyboardInterrupt:
-            return
+            if should_break:
+                raise
+            should_break = True
+            print("Ctrl+C detected, will stop after this file. Press again to stop immediately")
         except Exception:
             traceback.print_exc()
             self.error = True
             self.save()
+        if should_break:
+            raise KeyboardInterrupt()
 
     def replace(self):
         if self.converted and self.output_path:
